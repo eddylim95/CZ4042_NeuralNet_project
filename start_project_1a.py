@@ -15,18 +15,7 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 def scale(X, X_min, X_max):
     return (X - X_min)/(X_max-X_min)
 
-def batch_separator(data, batch_size) -> list:
-    """Separates into batches. Returns list of subarrays
-    """
-    data_len = data.shape[0]
-    remove_data = data_len % batch_size
-    print(data.shape)
-    if remove_data != 0:
-        data = data[:-remove_data,:]
-    split_num = int(data_len / batch_size)
-    return np.split(data, split_num)
-
-    # Build the graph for the deep net
+# Build the graph for the deep net
 def ffn(x, num_neurons):
     """Feedforward net with 1 hidden layer
     """
@@ -54,11 +43,10 @@ def make_train_model(X,Y,batch_size, num_neurons_list):
     for fold in range(num_folds):
         print(f'Fold number: {fold+1}')
         n = int(train_x.shape[0] / num_folds)
-        print(f'n = {n}')
-        start, end = fold*n, (fold+1)*n
-        x_test, y_test = test_x[start:end], test_y[start:end]
-        x_train  = np.append(train_x[:start], train_x[end:], axis=0)
-        y_train = np.append(train_y[:start], train_y[end:], axis=0) 
+        fold_start, fold_end = fold*n, (fold+1)*n
+        x_test, y_test = test_x[fold_start:fold_end], test_y[fold_start:fold_end]
+        x_train  = np.append(train_x[:fold_start], train_x[fold_end:], axis=0)
+        y_train = np.append(train_y[:fold_start], train_y[fold_end:], axis=0) 
         # print(test_index)
 
         train_acc_ = []
@@ -69,6 +57,7 @@ def make_train_model(X,Y,batch_size, num_neurons_list):
             y_ = tf.placeholder(tf.float32, [None, NUM_CLASSES])
 
             logits, regularizer = ffn(x, num_neurons)
+
             cost = tf.nn.softmax_cross_entropy_with_logits_v2(labels=y_, logits=logits)
             loss = tf.reduce_mean(cost + weight_decay_beta*regularizer)
 
@@ -82,7 +71,9 @@ def make_train_model(X,Y,batch_size, num_neurons_list):
             with tf.Session() as sess:
                 sess.run(tf.global_variables_initializer())
                 for i in range(epochs):
-                    train_op.run(feed_dict={x: x_train, y_: y_train})
+                    # Handle in batches
+                    for start, end in zip(range(0, len(x_train), batch_size), range(batch_size, len(x_train), batch_size)):
+                        train_op.run(feed_dict={x: x_train[start:end], y_: y_train[start:end]})
                     train_acc_.append(accuracy.eval(feed_dict={x: x_test, y_: y_test}))
 
                     if i % 100 == 0:
@@ -115,23 +106,7 @@ trainY[np.arange(train_Y.shape[0]), train_Y-1] = 1 # one hot matrix
 trainX = trainX[:1000]
 trainY = trainY[:1000]
 
-# shuffle is true by default
-# train_x, test_x, train_y, test_y = train_test_split(trainX, trainY, test_size=0.3, random_state=seed)
-# train_x = batch_separator(train_x, batch_size[3])
-# test_x = batch_separator(test_x, batch_size[3])
-# train_y = batch_separator(train_y, batch_size[3])
-# test_y = batch_separator(test_y, batch_size[3])
-# print(train_x[0].shape)
-# sys.exit()
-
 train_acc = make_train_model(trainX, trainY ,batch_size[3], [num_neurons_list[1]]) # Q1, batch size 32, 10 hidden neurons
-
-# plot learning curves
-# plt.figure(1)
-# plt.plot(range(epochs), train_acc)
-# plt.xlabel(str(epochs) + ' iterations')
-# plt.ylabel('Train accuracy')
-# plt.show()
 
 fig, ax = plt.subplots()
 for i in range(len(train_acc)):
