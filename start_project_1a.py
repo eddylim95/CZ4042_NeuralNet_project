@@ -1,3 +1,4 @@
+#%%
 #
 # Project 1, starter code part a
 #
@@ -46,7 +47,7 @@ def l4_ffn(x, neuron_size, weight_decay_beta):
     with tf.name_scope('hidden2'):
         weights = tf.Variable(tf.truncated_normal([neuron_size, neuron_size], stddev=1.0/math.sqrt(float(neuron_size))), name='weights')
         biases  = tf.Variable(tf.zeros([neuron_size]), name='biases')
-        h  = tf.nn.relu(tf.matmul(x, weights) + biases)
+        h  = tf.nn.relu(tf.matmul(h, weights) + biases)
         sum_regularization += weight_decay_beta * tf.nn.l2_loss(weights)
     with tf.name_scope('linear'):
         weights = tf.Variable(tf.truncated_normal([neuron_size, NUM_CLASSES], stddev=1.0/math.sqrt(float(neuron_size))), name='weights')
@@ -64,8 +65,12 @@ def make_train_model(train_x, test_x, train_y, test_y, batch_sizes: list, neuron
         train_acc[weight_decay] = {}
         test_acc[weight_decay] = {}
         time_elapsed[weight_decay] = {}
+        print(f'Training {weight_decay} for weight decay')
         for neuron_size in neuron_sizes:
             # Create the model
+            train_acc[weight_decay][neuron_size] = {}
+            test_acc[weight_decay][neuron_size] = {}
+            time_elapsed[weight_decay][neuron_size] = {}
             print(f'Training {neuron_size} for hidden layer')
             x = tf.placeholder(tf.float32, [None, NUM_FEATURES])
             y_ = tf.placeholder(tf.float32, [None, NUM_CLASSES])
@@ -89,12 +94,10 @@ def make_train_model(train_x, test_x, train_y, test_y, batch_sizes: list, neuron
             accuracy = tf.reduce_mean(correct_prediction)
 
             for batch_size in batch_sizes:
-                train_acc[weight_decay][neuron_size] = {}
-                test_acc[weight_decay][neuron_size] = {}
-                time_elapsed[weight_decay][neuron_size] = {}
                 train_acc[weight_decay][neuron_size][batch_size] = []
                 test_acc[weight_decay][neuron_size][batch_size] = []
                 time_elapsed[weight_decay][neuron_size][batch_size] = []
+                print(f'Training {batch_size} for batch_size')
                 train_acc_list = []
                 test_acc_list = []
                 time_elapsed_list = []
@@ -133,12 +136,21 @@ def make_train_model(train_x, test_x, train_y, test_y, batch_sizes: list, neuron
 
 def plot_acc(filename: str, train_acc: dict, test_acc: dict, weight_decay_betas: list, neuron_size: list, batch_size: list):
     fig, ax = plt.subplots()
+    label = ''
     for weight_decay in weight_decay_betas:
         for neuron in neuron_size:
             for batch in batch_size:
-                ax.plot(range(epochs), train_acc[weight_decay][neuron][batch], linewidth=2, label=f'Train accuracy, neuron: {neuron}, batch_size: {batch}')
-                ax.plot(range(epochs), test_acc[weight_decay][neuron][batch], linewidth=2, label=f'Test accuracy, neuron: {neuron}, batch_size: {batch}')
-    ax.legend(loc='lower right')
+                if len(neuron_size) > 1:
+                    label = f'neuron: {neuron}'
+                elif len(weight_decay_betas) > 1:
+                    label = f'weight decay: {weight_decay}'
+                elif len(batch_size) > 1:
+                    label = f'batch size: {batch}'
+                if train_acc != {}:
+                    ax.plot(range(epochs), train_acc[weight_decay][neuron][batch], linewidth=2, label=f'Train accuracy, '+label)
+                if test_acc != {}:
+                    ax.plot(range(epochs), test_acc[weight_decay][neuron][batch], linewidth=2, label=f'Test accuracy, '+label)
+    ax.legend(loc='best')
     plt.savefig(filename)
     plt.show()
 
@@ -148,16 +160,18 @@ def plot_time(filename: str, time_elapsed: dict, weight_decay_beta:list, neuron_
         for neuron in neuron_size:
             for batch in batch_size:
                 ax.plot(range(epochs), time_elapsed[weight_decay][neuron][batch], linewidth=2, label=f'Batch_size: {batch} time elapsed(s)')
-    ax.legend(loc='lower right')
+    ax.legend(loc='best')
     plt.savefig(filename)
     plt.show()
 
 def plot_3l_4l_comp(filename: str, train_acc_3: dict, test_acc_3: dict, train_acc_4: dict, test_acc_4: dict, weight_decay: list, neuron: list, batch: list):
     fig, ax = plt.subplots()
-    ax.plot(range(epochs), train_acc_3[weight_decay[0]][neuron[0]][batch[0]], linewidth=2, label='Train accuracy, 3 layer network')
-    ax.plot(range(epochs), test_acc_3[weight_decay[0]][neuron[0]][batch[0]], linewidth=2, label='Test accuracy, test 3 layer network')
-    ax.plot(range(epochs), train_acc_4[weight_decay[1]][neuron[1]][batch[1]], linewidth=2, label='Train accuracy, train 4 layer network')
-    ax.plot(range(epochs), test_acc_4[weight_decay[1]][neuron[1]][batch[1]], linewidth=2, label='Test accuracy, test 4 layer network')
+    if train_acc_3 != {} or train_acc_4 != {}:
+        ax.plot(range(epochs), train_acc_3[weight_decay[0]][neuron[0]][batch[0]], linewidth=2, label='Train accuracy, 3 layer network')
+        ax.plot(range(epochs), train_acc_4[weight_decay[1]][neuron[1]][batch[1]], linewidth=2, label='Train accuracy, train 4 layer network')
+    if test_acc_3 != {} or test_acc_4 != {}:
+        ax.plot(range(epochs), test_acc_3[weight_decay[0]][neuron[0]][batch[0]], linewidth=2, label='Test accuracy, test 3 layer network')
+        ax.plot(range(epochs), test_acc_4[weight_decay[1]][neuron[1]][batch[1]], linewidth=2, label='Test accuracy, test 4 layer network')
     ax.legend(loc='lower right')
     plt.savefig(filename)
     plt.show()
@@ -184,41 +198,60 @@ trainY = np.zeros((train_Y.shape[0], NUM_CLASSES))
 trainY[np.arange(train_Y.shape[0]), train_Y-1] = 1 # one hot matrix
 
 # experiment with small datasets
-# trainX = trainX[:1000]
-# trainY = trainY[:1000]
+trainX = trainX[:1000]
+trainY = trainY[:1000]
 
 test_split_num = int(len(trainX) * test_split)
 train_x, test_x = trainX[:test_split_num], trainX[test_split_num:]
 train_y, test_y = trainY[:test_split_num], trainY[test_split_num:]
 
+#%%
 # Q1, batch size 32, 10 hidden neurons
 train_acc, test_acc, _ = make_train_model(train_x, test_x, train_y, test_y, [batch_size[3]], [neuron_size[1]], [weight_decay_betas[2]])
 plot_acc('plots/part1_Q1a.png', train_acc, test_acc, [weight_decay_betas[2]], [neuron_size[1]], [batch_size[3]])
 
+#%%
 # Q2, batch sizes {4, 8, 16, 32, 64}, 10 hidden neurons
 train_acc, test_acc, time_elapsed = make_train_model(train_x, test_x, train_y, test_y, batch_size, [neuron_size[1]], [weight_decay_betas[2]])
-plot_time('plots/part1_Q2a.png', time_elapsed, [weight_decay_betas[2]], [neuron_size[1]], batch_size)
-plot_acc('plots/part1_Q2c.png', train_acc, test_acc, [weight_decay_betas[2]], [neuron_size[1]], batch_size)
-
-optimal_batch_size = batch_size[4]
+#%%
+plot_time('plots/part1_Q2a_1.png', time_elapsed, [weight_decay_betas[2]], [neuron_size[1]], batch_size)
+plot_acc('plots/part1_Q2a_2.png', train_acc, test_acc, [weight_decay_betas[2]], [neuron_size[1]], batch_size)
+plot_acc('plots/part1_Q2a_3.png', {}, test_acc, [weight_decay_betas[2]], [neuron_size[1]], batch_size)
+plot_acc('plots/part1_Q2a_4.png', train_acc, {}, [weight_decay_betas[2]], [neuron_size[1]], batch_size)
+#%%
+# Optimal batch size = 16
+optimal_batch_size = batch_size[2]
 plot_acc('plots/part1_Q2c_optimal.png', train_acc, test_acc, [weight_decay_betas[2]], [neuron_size[1]], [optimal_batch_size])
+#%%
+# Q3, batch size 16, {5,10,15,20,25} hidden neurons
+train_acc, test_acc,_ = make_train_model(train_x, test_x, train_y, test_y, [optimal_batch_size], neuron_size, [weight_decay_betas[2]])
+#%%
+plot_acc('plots/part1_Q3a_1.png', train_acc, test_acc, [weight_decay_betas[2]], neuron_size, [optimal_batch_size])
+plot_acc('plots/part1_Q3a_2.png', {}, test_acc, [weight_decay_betas[2]], neuron_size, [optimal_batch_size])
+plot_acc('plots/part1_Q3a_3.png', train_acc, {}, [weight_decay_betas[2]], neuron_size, [optimal_batch_size])
+#%%
+# Optimal neuron size = 5
+optimal_neuron_size = neuron_size[1]
+plot_acc('plots/part1_Q3c.png', train_acc, test_acc, [weight_decay_betas[2]], [optimal_neuron_size], [optimal_batch_size])
+#%%
+# Q4, batch size 16, 5 hidden neurons, decay parameters {0, 10e−3, 10e−6, 10e−9, 10e−12}
+train_acc, test_acc,_ = make_train_model(train_x, test_x, train_y, test_y, [optimal_batch_size], [optimal_neuron_size], weight_decay_betas)
+#%%
+plot_acc('plots/part1_Q4a_1.png', train_acc, test_acc, weight_decay_betas, [optimal_neuron_size], [optimal_batch_size])
+plot_acc('plots/part1_Q4a_2.png', {}, test_acc, weight_decay_betas, [optimal_neuron_size], [optimal_batch_size])
+plot_acc('plots/part1_Q4a_3.png', train_acc, {}, weight_decay_betas, [optimal_neuron_size], [optimal_batch_size])
+#%%
+# Optimal = 1e-08
+optimal_weight_decay = weight_decay_betas[3]
+plot_acc('plots/part1_Q4c.png', train_acc, test_acc, [optimal_weight_decay], [optimal_neuron_size], [optimal_batch_size])
+#%%
+# Q5, 3 or 4 layers
+# Run with Q4 code
+train_acc_2, test_acc_2,_ = make_train_model(train_x, test_x, train_y, test_y, [batch_size[3]], [neuron_size[1]], [weight_decay_betas[2]], layers=4)
+#%%
+plot_acc('plots/part1_Q5a.png', train_acc_2, test_acc_2, [weight_decay_betas[2]], [neuron_size[1]], [batch_size[3]])
+plot_3l_4l_comp('plots/part1_Q5b_1.png', train_acc, test_acc, train_acc_2, test_acc_2, [optimal_weight_decay, weight_decay_betas[2]], [optimal_neuron_size, neuron_size[1]], [optimal_batch_size, batch_size[3]])
+plot_3l_4l_comp('plots/part1_Q5b_2.png', {}, test_acc, {}, test_acc_2, [optimal_weight_decay, weight_decay_betas[2]], [optimal_neuron_size, neuron_size[1]], [optimal_batch_size, batch_size[3]])
+plot_3l_4l_comp('plots/part1_Q5b_3.png', train_acc, {}, train_acc_2, {}, [optimal_weight_decay, weight_decay_betas[2]], [optimal_neuron_size, neuron_size[1]], [optimal_batch_size, batch_size[3]])
 
-# # Q3, batch size ?, {5,10,15,20,25} hidden neurons
-# train_acc, test_acc,_ = make_train_model(train_x, test_x, train_y, test_y, [optimal_batch_size], neuron_size, [weight_decay_betas[2]])
-# plot_acc('plots/part1_Q3a.png', train_acc, test_acc, [weight_decay_betas[2]], neuron_size, [optimal_batch_size])
-
-# optimal_neuron_size = neuron_size[4]
-# plot_acc('plots/part1_Q3c.png', train_acc, test_acc, [weight_decay_betas[2]], [optimal_neuron_size], [optimal_batch_size])
-
-# # Q4, batch size ?, ? hidden neurons, decay parameters {0, 10e−3, 10e−6, 10e−9, 10e−12}
-# train_acc, test_acc,_ = make_train_model(train_x, test_x, train_y, test_y, [optimal_batch_size], [optimal_neuron_size], [weight_decay_betas[2]])
-# plot_acc('plots/part1_Q4a.png', train_acc, test_acc, weight_decay_betas, [optimal_neuron_size], [optimal_batch_size])
-
-# optimal_weight_decay = weight_decay_betas[3]
-# plot_acc('plots/part1_Q4c.png', train_acc, test_acc, [optimal_weight_decay], [optimal_neuron_size], [optimal_batch_size])
-
-# # Q5, 3 or 4 layers
-# # Run with Q4 code
-# train_acc_2, test_acc_2,_ = make_train_model(train_x, test_x, train_y, test_y, [batch_size[3]], [neuron_size[1]], [weight_decay_betas[2]], layers=4)
-# plot_acc('plots/part1_Q5a.png', train_acc_2, test_acc_2, [batch_size[3]], [neuron_size[1]], [weight_decay_betas[2]])
-# plot_3l_4l_comp('plots/part1_Q5b.png', train_acc, test_acc, train_acc_2, test_acc_2, [optimal_batch_size, batch_size[3]], [optimal_neuron_size, neuron_size[1]], [optimal_weight_decay, weight_decay_betas[2]])
+#%%

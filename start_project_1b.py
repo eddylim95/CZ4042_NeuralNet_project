@@ -5,8 +5,33 @@
 import tensorflow as tf
 import numpy as np
 import pylab as plt
+import math
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
+def ffn(x, neuron_size, weight_decay_beta, layers=3):
+    """Feedforward net with 1 hidden layer
+    """
+    sum_regularization = 0
+    with tf.name_scope('hidden'):
+        weights = tf.Variable(tf.truncated_normal([NUM_FEATURES, neuron_size], stddev=1.0 / np.sqrt(NUM_FEATURES), dtype=tf.float32), name='weights')
+        biases = tf.Variable(tf.zeros([neuron_size]), dtype=tf.float32, name='biases')
+        h  = tf.nn.relu(tf.matmul(x, weights) + biases)
+        sum_regularization += weight_decay_beta * tf.nn.l2_loss(weights)
+    if layers > 3:
+        for i in range(layers-3):
+            with tf.name_scope('hidden{}'.format(i)):
+                weights = tf.Variable(tf.truncated_normal([neuron_size, neuron_size], stddev=1.0 / np.sqrt(neuron_size), dtype=tf.float32), name='weights')
+                biases = tf.Variable(tf.zeros([neuron_size]), dtype=tf.float32, name='biases')
+                h  = tf.nn.relu(tf.matmul(h, weights) + biases)
+                sum_regularization += weight_decay_beta * tf.nn.l2_loss(weights)
+    with tf.name_scope('linear'):
+        weights = tf.Variable(tf.truncated_normal([neuron_size, 1], stddev=1.0 / np.sqrt(neuron_size), dtype=tf.float32), name='weights')
+        biases  = tf.Variable(tf.zeros([1]), dtype=tf.float32, name='biases')
+        u = tf.matmul(h, weights) + biases
+        sum_regularization += weight_decay_beta * tf.nn.l2_loss(weights)
+    
+    return u, sum_regularization
 
 NUM_FEATURES = 7
 
@@ -35,13 +60,6 @@ trainX = (trainX- np.mean(trainX, axis=0))/ np.std(trainX, axis=0)
 # Create the model
 x = tf.placeholder(tf.float32, [None, NUM_FEATURES])
 y_ = tf.placeholder(tf.float32, [None, 1])
-
-# Build the graph for the deep net
-weights = tf.Variable(tf.truncated_normal([NUM_FEATURES, 1], stddev=1.0 / np.sqrt(NUM_FEATURES), dtype=tf.float32), name='weights')
-biases = tf.Variable(tf.zeros([1]), dtype=tf.float32, name='biases')
-y = tf.matmul(x, weights) + biases
-
-
 
 #Create the gradient descent optimizer with the given learning rate.
 optimizer = tf.train.GradientDescentOptimizer(learning_rate)
