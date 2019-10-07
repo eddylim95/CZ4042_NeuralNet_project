@@ -92,31 +92,43 @@ def make_train_model(train_x, test_x, train_y, test_y, batch_sizes: list, neuron
                 train_acc[weight_decay][neuron_size] = {}
                 test_acc[weight_decay][neuron_size] = {}
                 time_elapsed[weight_decay][neuron_size] = {}
-                with tf.Session() as sess:
-                    sess.run(tf.global_variables_initializer())
-                    train_acc[weight_decay][neuron_size][batch_size] = []
-                    test_acc[weight_decay][neuron_size][batch_size] = []
-                    time_elapsed[weight_decay][neuron_size][batch_size] = []
-                    for fold in range(num_folds):
-                        print(f'Fold number: {fold+1}')
-                        n = int(train_x.shape[0] / num_folds)
-                        fold_start, fold_end = fold*n, (fold+1)*n
-                        x_test, y_test = test_x[fold_start:fold_end], test_y[fold_start:fold_end]
-                        x_train  = np.append(train_x[:fold_start], train_x[fold_end:], axis=0)
-                        y_train = np.append(train_y[:fold_start], train_y[fold_end:], axis=0) 
-                        # print(test_index)
-
+                train_acc[weight_decay][neuron_size][batch_size] = []
+                test_acc[weight_decay][neuron_size][batch_size] = []
+                time_elapsed[weight_decay][neuron_size][batch_size] = []
+                train_acc_list = []
+                test_acc_list = []
+                time_elapsed_list = []
+                for fold in range(num_folds):
+                    print(f'Fold number: {fold+1}')
+                    n = int(train_x.shape[0] / num_folds)
+                    fold_start, fold_end = fold*n, (fold+1)*n
+                    x_test, y_test = test_x[fold_start:fold_end], test_y[fold_start:fold_end]
+                    x_train  = np.append(train_x[:fold_start], train_x[fold_end:], axis=0)
+                    y_train = np.append(train_y[:fold_start], train_y[fold_end:], axis=0) 
+                    train_acc_ = []
+                    test_acc_ = []
+                    time_elapsed_ = []
+                    # print(test_index)
+                    with tf.Session() as sess:
+                        sess.run(tf.global_variables_initializer())
                         for i in range(epochs):
                             # Time
                             start_time = time.time()
                             # Handle in batches
                             for start, end in zip(range(0, len(x_train), batch_size), range(batch_size, len(x_train), batch_size)):
                                 train_op.run(feed_dict={x: x_train[start:end], y_: y_train[start:end]})
-                            train_acc[weight_decay][neuron_size][batch_size].append(accuracy.eval(feed_dict={x: x_train, y_: y_train}))
-                            test_acc[weight_decay][neuron_size][batch_size].append(accuracy.eval(feed_dict={x: x_test, y_: y_test}))
-                            time_elapsed[weight_decay][neuron_size][batch_size].append(time.time() - start_time)
+                            time_elapsed_.append(time.time() - start_time)
+                            train_acc_.append(accuracy.eval(feed_dict={x: x_train, y_: y_train}))
+                            test_acc_.append(accuracy.eval(feed_dict={x: x_test, y_: y_test}))
                             if i % 100 == 0:
-                                print('iter %d: accuracy %g'%(i, train_acc[weight_decay][neuron_size][batch_size][i]))
+                                print('iter %d: accuracy %g'%(i, train_acc_[i]))
+                    train_acc_list.append(train_acc_)
+                    test_acc_list.append(test_acc_)
+                    time_elapsed_list.append(time_elapsed_)
+
+                train_acc[weight_decay][neuron_size][batch_size] = np.mean(np.array(train_acc_list), axis=0)
+                test_acc[weight_decay][neuron_size][batch_size] = np.mean(np.array(test_acc_list), axis=0)
+                time_elapsed[weight_decay][neuron_size][batch_size] = np.mean(np.array(time_elapsed_list), axis=0)
     return train_acc, test_acc, time_elapsed
 
 def plot_acc(filename: str, train_acc: dict, test_acc: dict, weight_decay_betas: list, neuron_size: list, batch_size: list):
