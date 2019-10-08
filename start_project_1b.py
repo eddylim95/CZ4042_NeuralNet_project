@@ -1,10 +1,11 @@
+#%%
 #
 # Project 1, starter code part b
 #
 
 import tensorflow as tf
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 import math
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
@@ -30,7 +31,8 @@ def ffn(x, neuron_size, weight_decay_beta, layers=3):
         biases  = tf.Variable(tf.zeros([1]), dtype=tf.float32, name='biases')
         u = tf.matmul(h, weights) + biases
         sum_regularization += weight_decay_beta * tf.nn.l2_loss(weights)
-    
+
+
     return u, sum_regularization
 
 NUM_FEATURES = 7
@@ -38,8 +40,10 @@ NUM_FEATURES = 7
 learning_rate = 0.01
 epochs = 1000
 batch_size = 8
-num_neuron = 30
+neuron_size = 30
+weight_decay_beta = float('10e-3')
 seed = 10
+test_split = 0.3
 np.random.seed(seed)
 
 #read and divide data into test and train sets 
@@ -52,34 +56,77 @@ np.random.shuffle(idx)
 X_data, Y_data = X_data[idx], Y_data[idx]
 
 # experiment with small datasets
-trainX = X_data[:100]
-trainY = Y_data[:100]
+# trainX = X_data[:100]
+# trainY = Y_data[:100]
+trainX = X_data[:50]
+trainY = Y_data[:50]
 
 trainX = (trainX- np.mean(trainX, axis=0))/ np.std(trainX, axis=0)
+
+test_split_num = int(len(trainX) * test_split)
+train_x, test_x = trainX[:test_split_num], trainX[test_split_num:]
+train_y, test_y = trainY[:test_split_num], trainY[test_split_num:]
 
 # Create the model
 x = tf.placeholder(tf.float32, [None, NUM_FEATURES])
 y_ = tf.placeholder(tf.float32, [None, 1])
 
+y, regularizer = ffn(x, neuron_size, weight_decay_beta)
+
 #Create the gradient descent optimizer with the given learning rate.
 optimizer = tf.train.GradientDescentOptimizer(learning_rate)
-loss = tf.reduce_mean(tf.square(y_ - y))
+cost = tf.square(y_ - y)
+loss = tf.reduce_mean(cost + regularizer)
 train_op = optimizer.minimize(loss)
 
 with tf.Session() as sess:
-	sess.run(tf.global_variables_initializer())
-	train_err = []
-	for i in range(epochs):
-		train_op.run(feed_dict={x: trainX, y_: trainY})
-		err = loss.eval(feed_dict={x: trainX, y_: trainY})
-		train_err.append(err)
+    sess.run(tf.global_variables_initializer())
+    train_err = []
+    test_err = []
+    prediction = []
+    for i in range(epochs):
+        # Handle in batches
+        for start, end in zip(range(0, len(train_x), batch_size), range(batch_size, len(train_x), batch_size)):
+            train_op.run(feed_dict={x: train_x[start:end], y_: train_y[start:end]})
+        err = loss.eval(feed_dict={x: train_x, y_: train_y})
+        test_err_ = loss.eval(feed_dict={x: test_x, y_: test_y})
+        train_err.append(err)
+        test_err.append(test_err_)
 
-		if i % 100 == 0:
-			print('iter %d: train error %g'%(i, train_err[i]))
-
+        if i % 100 == 0:
+            print('iter %d: train error %g'%(i, train_err[i]))
+    for i in range(50):
+        pred = train_op.run(loss, feed_dict={x: X_data[:-50]})
+        prediction.append(pred)
+#%%
+print(np.array(prediction))
+#%%
 # plot learning curves
-plt.figure(1)
-plt.plot(range(epochs), train_err)
-plt.xlabel(str(epochs) + ' iterations')
-plt.ylabel('Train Error')
+fig, ax = plt.subplots()
+# plt.figure(1)
+plt.plot(range(epochs), train_err, label=f'Train Error')
+plt.plot(range(epochs), test_err, label=f'Test Error')
+plt.xlabel(str(epochs) + ' epochs')
+plt.ylabel('Mean Square Error')
+ax.legend(loc='best')
+plt.savefig('plots2/part2_Q1a')
 plt.show()
+#%%
+fig, ax = plt.subplots()
+# plt.figure(1)
+plt.plot(range(50), prediction[0], label=f'Prediction')
+plt.plot(range(50), Y_data[:-50], label=f'Actual')
+plt.xlabel(str(50) + ' epochs')
+plt.ylabel('Prediction')
+ax.legend(loc='best')
+# plt.savefig('plots2/part2_Q1c')
+plt.show()
+
+#%%
+# Q2a
+import pandas as pd
+df = pd.read_csv('admission_predict.csv')
+df = df.iloc[:,1:]
+df = df.corr()
+df.to_csv('plots2/correlation_matrix.csv')
+#%%
