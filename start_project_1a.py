@@ -198,8 +198,8 @@ trainY = np.zeros((train_Y.shape[0], NUM_CLASSES))
 trainY[np.arange(train_Y.shape[0]), train_Y-1] = 1 # one hot matrix
 
 # experiment with small datasets
-trainX = trainX[:1000]
-trainY = trainY[:1000]
+# trainX = trainX[:1000]
+# trainY = trainY[:1000]
 
 test_split_num = int(len(trainX) * test_split)
 train_x, test_x = trainX[:test_split_num], trainX[test_split_num:]
@@ -219,8 +219,8 @@ plot_acc('plots/part1_Q2a_2.png', train_acc, test_acc, [weight_decay_betas[2]], 
 plot_acc('plots/part1_Q2a_3.png', {}, test_acc, [weight_decay_betas[2]], [neuron_size[1]], batch_size)
 plot_acc('plots/part1_Q2a_4.png', train_acc, {}, [weight_decay_betas[2]], [neuron_size[1]], batch_size)
 #%%
-# Optimal batch size = 16
-optimal_batch_size = batch_size[2]
+# Optimal batch size = 8
+optimal_batch_size = batch_size[1]
 plot_acc('plots/part1_Q2c_optimal.png', train_acc, test_acc, [weight_decay_betas[2]], [neuron_size[1]], [optimal_batch_size])
 #%%
 # Q3, batch size 16, {5,10,15,20,25} hidden neurons
@@ -230,8 +230,8 @@ plot_acc('plots/part1_Q3a_1.png', train_acc, test_acc, [weight_decay_betas[2]], 
 plot_acc('plots/part1_Q3a_2.png', {}, test_acc, [weight_decay_betas[2]], neuron_size, [optimal_batch_size])
 plot_acc('plots/part1_Q3a_3.png', train_acc, {}, [weight_decay_betas[2]], neuron_size, [optimal_batch_size])
 #%%
-# Optimal neuron size = 5
-optimal_neuron_size = neuron_size[1]
+# Optimal neuron size = 20
+optimal_neuron_size = neuron_size[3]
 plot_acc('plots/part1_Q3c.png', train_acc, test_acc, [weight_decay_betas[2]], [optimal_neuron_size], [optimal_batch_size])
 #%%
 # Q4, batch size 16, 5 hidden neurons, decay parameters {0, 10e−3, 10e−6, 10e−9, 10e−12}
