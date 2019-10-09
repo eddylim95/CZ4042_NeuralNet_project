@@ -243,7 +243,7 @@ plot_acc('plots/part1_Q4a_1.png', train_acc, test_acc, weight_decay_betas, [opti
 plot_acc('plots/part1_Q4a_2.png', {}, test_acc, weight_decay_betas, [optimal_neuron_size], [optimal_batch_size])
 plot_acc('plots/part1_Q4a_3.png', train_acc, {}, weight_decay_betas, [optimal_neuron_size], [optimal_batch_size])
 #%%
-# Optimal = 1e-08
+# Optimal decay = 1e-08
 optimal_weight_decay = weight_decay_betas[3]
 plot_acc('plots/part1_Q4c.png', train_acc, test_acc, [optimal_weight_decay], [optimal_neuron_size], [optimal_batch_size])
 #%%
