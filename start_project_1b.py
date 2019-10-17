@@ -85,6 +85,16 @@ def plot_rfe_loss(filename, x_headers, epochs, plot_list):
     plt.savefig(filename)
     plt.show()
 
+def plot_test_err_comparison(filename, epochs, error_list):
+    fig, ax = plt.subplots(figsize=[12.8,9.6])
+    for i,errors in enumerate(error_list):
+        plt.plot(range(epochs), errors[-epochs:], label=f'Test Error with {i} RFE')
+    plt.xlabel(str(epochs) + ' epochs')
+    plt.ylabel('Mean Square Error')
+    ax.legend(loc='best')
+    plt.savefig(filename)
+    plt.show()
+
 def plot_acc_vs_pred(filename, prediction, Y_data):
     fig, ax = plt.subplots(figsize=[12.8,9.6])
     plt.plot(range(50), prediction, label=f'Prediction')
@@ -232,6 +242,43 @@ for i in range(6):
 plot_rfe_loss('plots2/part3_4', x_headers2, epochs, train_err_list)
 plot_rfe_loss('plots2/part3_5', x_headers2, epochs, test_err_list)
 plot_rfe_loss('plots2/part3_6', x_headers2, 100, test_err_list)
+
+#%%
+# Q3 comparison between RFE
+test_err_list = []
+train_err_list = []
+prediction_list = []
+
+# Before any removal
+y, train_op, y_, x, loss = create_model(7, neuron_size, weight_decay_beta, learning_rate)
+test_err, train_err, prediction = train_model(train_op, train_x, train_y, test_x, test_y, y, y_, x, loss)
+test_err_list.append(test_err)
+train_err_list.append(train_err)
+prediction_list.append(prediction)
+
+# Remove University Ranking
+train_x_ = np.append(train_x[:, :2], train_x[:, 2+1:], axis=1)
+test_x_ = np.append(test_x[:, :2], test_x[:, 2+1:], axis=1)
+
+y, train_op, y_, x, loss = create_model(6, neuron_size, weight_decay_beta, learning_rate)
+test_err, train_err, prediction = train_model(train_op, train_x_, train_y, test_x_, test_y, y, y_, x, loss)
+test_err_list.append(test_err)
+train_err_list.append(train_err)
+prediction_list.append(prediction)
+
+# Remove SOP
+train_x_ = np.append(train_x_[:, :2], train_x_[:, 2+1:], axis=1)
+test_x_ = np.append(test_x_[:, :2], test_x_[:, 2+1:], axis=1)
+
+y, train_op, y_, x, loss = create_model(5, neuron_size, weight_decay_beta, learning_rate)
+test_err, train_err, prediction = train_model(train_op, train_x_, train_y, test_x_, test_y, y, y_, x, loss)
+test_err_list.append(test_err)
+train_err_list.append(train_err)
+prediction_list.append(prediction)
+
+#%%
+plot_test_err_comparison('plots2/part3_7', epochs, test_err_list)
+plot_test_err_comparison('plots2/part3_8', 100, test_err_list)
 
 #%%
 # Q4. Neuron size 50, 4 and 5 layer network, learning rate 10e-3, 
