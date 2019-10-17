@@ -312,6 +312,6 @@ for i in range(3, 6):
     prediction_list.append(prediction)
 
 #%%
-# 3-layer net without dropout is the best
+# 3-layer net with dropout is the best
 plot_layer_comp('plots2/part4_1', epochs, test_err_list, 'Test')
 plot_layer_comp('plots2/part4_2', epochs, train_err_list, 'Train')
