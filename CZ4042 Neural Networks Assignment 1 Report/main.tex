@@ -1,0 +1,118 @@
+\documentclass[12pt,a4paper,xcolor=table]{report}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ left=20mm,
+ top=20mm,
+ right=20mm,
+ bottom=20mm
+ }
+\usepackage[english]{babel}
+% To change the name of Appendix to Annex
+% \addto{\captionsenglish}{\renewcommand*{\appendixname}{Annex}}
+\usepackage[utf8]{inputenc}
+% Use times new roman
+\usepackage{mathptmx}
+\usepackage{setspace}
+\usepackage[official]{eurosym}
+\usepackage{textcomp}
+\usepackage{pdfpages}
+\usepackage{longtable}
+\usepackage[compact]{titlesec}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{csquotes}
+\usepackage{amsmath}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+% ref packages
+\usepackage{nameref}
+% following  must be in this order
+\usepackage{varioref}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+\usepackage[backend=biber,style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% % Remove chapter headings and page break
+% \titleformat{\chapter}[display]
+% {\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{0pt}{\Huge}
+% \titleclass{\chapter}{straight}
+
+% % this alters "before" spacing (the second length argument) to 0
+% \titlespacing*{\chapter}{0pt}{0pt}{0pt}
+% \titlespacing*{\section}{0pt}{0pt}{0pt}
+% \titlespacing*{\subsection}{0pt}{0pt}{0pt}
+
+% \makeatother
+% Set new lengths
+\newlength{\chapheadtopskip}\setlength{\chapheadtopskip}{0pt}
+\newlength{\chapheadsep}\setlength{\chapheadsep}{0pt}
+\newlength{\chapheadbelowskip}\setlength{\chapheadbelowskip}{0pt}
+
+
+\begin{document}
+\input{cover_page.tex}
+
+\pagenumbering{roman}
+\tableofcontents
+\listoftables
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
+\lstlistoflistings
+\addcontentsline{toc}{chapter}{List of Listings}
+
+% % \setcounter{page}{1}
+\cleardoublepage
+\titlespacing*{\chapter}{0pt}{0pt}{0pt}
+% Set doublespace with no indent and 1em paragraph spacing
+
+% \titleformat{\chapter}[display]
+%   {\normalfont\bfseries}{}{-3em}{\Large}
+% Remove gaps from list items and list heading
+% \setlist[itemize]{noitemsep, topsep=-1pt}
+% \doublespacing
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+\pagenumbering{arabic}
+% ========================================================================
+\input{intro.tex}
+\input{methods.tex}
+\input{experiment_and_results_1a.tex}
+\input{experiment_and_results_1b.tex}
+\input{conclusion.tex}
+\newpage
+\pagenumbering{roman}
+% %%%% ADD BIBLOGARPHY
+\printbibliography
+
+\end{document}

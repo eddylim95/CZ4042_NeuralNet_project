@@ -1,0 +1,36 @@
+\chapter{Conclusion}
+\label{conclusion}
+
+\section{Part A: Classification of the Cardiotocography dataset}
+\subsection{Question 1}
+In question 1 in Section \ref{1q1}, it can be seen as discussed that the approximate number of epochs where the test error converges is around 2000. This stabilisation is due to the gradient descend algorithm  minimising loss using the learning rate in the local minima.
+
+\subsection{Question 2}
+In question 2 in Section \ref{1q2}, after experimenting with different batch sizes of [4, 8, 16, 32, 64], a batch size of 64 is obtained as the optimal batch size due to the accuracy it achieved. However, this is unexpected as usually the accuracy of prediction increases with a smaller batch size. Yet, in this case, a batch size of 64 is obtained as optimum, which suggests that a smaller batch size may not necessary mean a better result. Fortunately, this finding is convenient for the following experiments as it can be seen in \ref{fig:2_1a} that a batch size of 64 runs the fastest followed by 32, 16, 8 and 4. It also must be noted that the speed of batch execution may be affected by CPU and GPU (which is why i included the CPU and GPU specifications in Section \ref{methods}) speed, which also depends on the tasks being executed at that point in time. However, the average can show a fair result.
+
+\subsection{Question 3}
+In question 3 in Section \ref{1q3}, an optimum neuron size of 5 is obtained from the set of [5,10,15,20,25]. In this experiment, it is interesting to note that although the accuracy of both neuron size 5 and 25 is similar, we have chosen neuron size 5 to be the optimal neuron size. The superiority of neuron size 5 over 10 is that it is less complex, and thus less likely to have wrongly weighted weights which may lower accuracy when faced with data that is very different from those of the training and test sets used. Thus, it is important to consider the complexity of a model as well, other than just on the accuracy.
+
+\subsection{Question 4}
+In question 4 in Section \ref{1q4}, an optimum decay parameter of $10^{-9}$ is obtained as it has the highest test accuracy compared to the others. In this portion, it is interesting to note that the train accuracy for $10^{-9}$ was actually not the best while the test accuracy was the best. However, we have chosen it to be optimal based on the test accuracy since a test accuracy should give a better indication of accuracy due to the lack of exposure of the test set by the model when training.
+
+\subsection{Question 5}
+In question 5 in Section \ref{1q5}, the optimised 3-layer network outperforms the 4-layer network in accuracy. For the 4-layer network, there is a suspicion that it has overfit the data as the train accuracy is very similar to the 3-layer network while the test accuracy differs quite significantly. As such it can be hypothesised that overfitting might have happened. However, as the 4-layer network had not been optimised (parameters were used as specified by the question), it may be too early to judge that a 4-layer network is strictly better than a 3-layer network, although it is in this case.
+
+\section{Part B: Regression Problem of the Graduate Admissions Predication dataset}
+\subsection{Question 1}
+In question 1 in Section \ref{2q1}, we assumed the epoch number 1000 to be the point where the test error is the minimum with statistical importance. Also, in part c, the predicted value is mostly close to the actual values, which is expected due to low error rate. Additionally, it is important to note that as seen in Figure \ref{fig:2_1c}, there is no prediction that is exactly the same as actual values. This is due to the nature of the regression problem, where it is very likely to not be able to predict exact scores.
+
+\subsection{Question 2}
+In question 2 in Section \ref{2q2}, the correlation matrix shown in Table \ref{tab:corr_matrix} indicatied that the features with the highest correlation with each other are the TOEFL Score and GRE Score. This may be due to the nature of the similarities in the tests themself, as discussed in Section \ref{2q2}. Also, in theory, if two features are too correlated to each other, it may affect the prediction accuracy negatively, as they may cause the model to overcompensate for the same aspects of a key feature, which both of those features may, at their core, represent. Another thing to note was that CGPA is the feature that is the most correlated to Chance of Admit, while the GRE Score is the second most correlated to Chance of Admit. As such, this may give an indication that these 2 features are very important to the Chance to Admit. As such, increases in error rate may occur when any of them are removed.
+
+\subsection{Question 3}
+In question 3 in Section \ref{2q3}, we explored the effects of RFE on the performance of the models. As shown in Figure \ref{fig:rfe3_zoom}, the removal of only Univeristy Ranking yielded the best performance, while no removal of features and the removal of SOP yielded similar performances. Also interestingly, while during the first iteration of RFE, the GRE was highlighted as the feature that, when removed, gave the second least reduction in mean square error. However, during the second iteration of RFE, it was not chosen as the feature to be removed. This shows that a RFE must be carried out dutifully, in a recursive fashion as the results for a next removal may not be the same as the feature which gave little changes in mean square error the previous iteration. 
+
+Additionally, in Figure \ref{fig:rfe1_zoom}, the highest gain in mean square error was given by the removal of CGPA scores in the first RFE iteration. This is consistent with the previous finding in Question 2 that CGPA has the highest correlation with the Chance to Admit.
+
+\subsection{Question 4}
+In question 3 in Section \ref{2q4}, we concluded that the 3-layer network with dropouts performed the best as compared to all the other combinations of dropouts and layers. The general trend obtained was that the higher the number of layers, the slower it took to converge, and the more the loss is impacted negatively. Also, dropouts generally improved the mean square errors in this dataset. Moreover, in theory, the introduction of dropouts should improve the performance of a model by reducing its tendency to overfit. However, in this case, such an effect cannot be observed due to the similarity of results seen in both the training and test errors, without a significant difference in test and train errors.
+
+\section{Conclusion}
+In conclusion, we have discussed two problems, one classification and one regression in this report and experienced the differences in techniques in handling these 2 different problems.
