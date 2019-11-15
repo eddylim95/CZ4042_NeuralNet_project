@@ -1,0 +1,34 @@
+\chapter{Methods}
+\label{methods}
+
+In this chapter, the experimental setup done will be discussed.
+
+\section{Part A: Object Recognition of the CIFAR-10 dataset}
+In this problem, experiments were carried out in a google colab virtual machine (VM), using python 3.x and CPU clock of 2.3 GHz and Tesla K80 as the GPU, with 12GB gpu ram (specifications obtained from \cite{carneiro2018performance}).
+
+The imports used in this problem is shown in Listing \ref{ls:p1}.
+
+\begin{lstlisting}[language=Python, caption= Imports used for problem 1, label=ls:p1]
+import math
+import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
+import pickle
+from tqdm import tqdm_notebook as tqdm
+import sys
+\end{lstlisting}
+
+\section{Part B: Text classification of Wikipage entries}
+Similarly in this problem, experiments were carried out in a google colab virtual machine (VM), using python 3.x and CPU clock of 2.3 GHz and Tesla K80 as the GPU, with 12GB gpu ram (specifications obtained from \cite{carneiro2018performance}).
+
+The imports used in this problem is shown in Listing \ref{ls:p2}
+
+\begin{lstlisting}[language=Python, caption= Imports used for problem 2, label=ls:p2]
+import numpy as np
+import pandas
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import csv
+import time
+from tqdm import tqdm_notebook as tqdm
+\end{lstlisting}

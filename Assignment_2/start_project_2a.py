@@ -221,8 +221,6 @@ with tf.Session() as sess:
         for start, end in zip(range(0, len(train_X), batch_size), range(batch_size, len(train_X), batch_size)):
             _, batch_cost = sess.run([train_step, loss], {x: train_X[start:end], y_: train_Y[start:end]})
             train_cost_.append(batch_cost)
-        _, batch_cost = sess.run([train_step, loss], {x: train_X[end:], y_: train_Y[end:]})
-        train_cost_.append(batch_cost)
         train_cost.append(np.mean(np.array(train_cost_), axis=0))
         test_acc.append(accuracy.eval(feed_dict={x: testX, y_: testY}))
         if e % 10 == 0:
